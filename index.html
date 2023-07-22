@@ -1,38 +1,42 @@
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alarm</title>
+    <title>My Timer</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <audio id="alarm-tone" src="music/soothing.mp3" controls></audio>
-    <div class="display-flex-col-center" id="main-box">
-        <div>
-            <p id="heading">Multiple Timers App</p>
-        </div>
-        <div id="timer-div" class="timer-div">
-            <div class="display-flex-row-center gap-2rem timer-box">
-                <p id="set-time">Set Time :</p>
-                <div id="time-count" class="display-flex-row-center">
-                    <p id="hour" contenteditable="true">hh</p>
-                    <p>:</p>
-                    <p id="min" contenteditable="true" >mm</p>
-                    <p>:</p>
-                    <p id="sec" contenteditable="true">ss</p>
-                </div>
-                <div id="set-btn">Set</div>
-            </div>
-        </div>
-        <div id="current-timers-btn">Current Timers</div>
+    <audio id="notificationSound" src="./alarm.mp3">This is audio tag</audio>
 
-        <div id="timers-list" class="display-flex-col-center gap-2rem">
-            <div id="current-timers">You have no timers currently</div>
-            
+   <nav>
+      <h1>Multiple Timers App</h1>
+      
+   </nav>
+   <main>
+     <div id="timer">
+        <h5>Set Time :</h5>
+        <div class="input-section">
+            <input id="hours" type="text" placeholder="HH"> <span>:</span>
+            <input id="minutes" type="text" placeholder="MM"> <span>:</span>
+            <input id="seconds" type="text" placeholder="SS">
+        </div>
+        <button id="set-alarm-button">Set</button>
+     </div>
+     <div class="" id="current-timers">
+        Current Timers
+     </div>
 
-    <script src="script.js"></script>
+
+     
+     <div id="active-timers">
+      <h2 id="worning">Yoy have no timers currently!</h2>
+     </div>
+   </main>
+   <footer>
+      @2023 All Rights Reserved - Shiva Saini
+   </footer>
+    <script src="./script.js"></script>
 </body>
-
 </html>
+                
