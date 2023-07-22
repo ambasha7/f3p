@@ -1,151 +1,131 @@
-const no_alarm_msg = document.getElementById('current-timers');
-const audioElement = document.getElementById('alarm-tone');
-audioElement.style.display = 'none';
-// buttons
-const set_alarm_btn = document.getElementById('set-btn');
+let setAlarmButton = document.getElementById('set-alarm-button');
+let activeTimersDiv = document.getElementById('active-timers');
+let idGiver = 1; // to give unique ids
+let intervalIdMap = new Map(); // map to take intervalid related to a  div
+setAlarmButton.addEventListener('click',() => {
+    document.getElementById('worning').style.display = 'none';
+     let timerDiv = document.createElement('div');
+     let timerDivId = idGiver++;
+     timerDiv.setAttribute('id',timerDivId); // setting id of timerdiv
+     timerDiv.setAttribute('class','active-timer') 
+     let hrs = parseInt(document.getElementById('hours').value, 10);// base 10 values
+     let mins = parseInt(document.getElementById('minutes').value, 10);
+     let seconds = parseInt(document.getElementById('seconds').value, 10);
 
-const timers = [];
-let seconds; // Initial time in seconds
-let alarms = 0;
+     if(isNaN(hrs) || isNaN(mins) || isNaN(seconds)){
+        return; // is user enter other than number then we will not do anything
+     }
 
+     document.getElementById('hours').value = "";
+     document.getElementById('minutes').value= "";
+     document.getElementById('seconds').value = "";
+     let time = hrs * 60 * 60 + mins * 60 + seconds; // calculating time in seconds
+     time = time * 1000; // making it according to setTime and setInterval functions
+ 
+     // making timer div dynamically and appending it to active timer div
+     timerDiv.innerHTML = 
+     `
+     <h5>Time Left :</h5>
+     <div class="active-timer-input-section">
+          <span id="hrs">${hrs}</span>
+          <span>:</span>
+          <span id="mn">${mins}</span> 
+          <span>:</span>
+         <span id="ss">${seconds}</span>
+     </div>
+     <button class="btndelete" onclick="deleteActiveTimer(${timerDivId})">Delete</button>
+     <button class="btnstop" onclick="deleteActiveTimer(${timerDivId})">Stop</button>
+      `
 
-// 1st functionality - display all timers
+     activeTimersDiv.appendChild(timerDiv);
+     setTimer(timerDivId,time); // calling setTimer function to set timer of this div
+     
+})
 
-set_alarm_btn.addEventListener('click', (event) => {
-    // alarm inputs
-    let hours = parseInt(document.getElementById('hour').textContent);
-    let min = parseInt(document.getElementById('min').textContent);
-    let sec = parseInt(document.getElementById('sec').textContent);
-    // console.log(hours);
-    // console.log(min);
-    // console.log(sec);
+function sayHello(timerDivId) {
+    let timerDiv = document.getElementById(timerDivId); // getting div
+    let timerDiveChildren = timerDiv.children[1]; // second element which is 'active-timer-input-section'
+    const spans = timerDiveChildren.getElementsByTagName("span"); //getting all the spans
+    let hrs = parseInt(spans[0].textContent); // taking textContent inside each span
+    let mins = parseInt(spans[2].textContent);
+    let seconds = parseInt(spans[4].textContent);
+    let time = hrs * 60 * 60 + mins * 60 + seconds; // calculating current time
+    time-=1; // decreamenting time by one each time after every second
+    if(time === 0){
+        // if time == 0 that means our timer has finished so we will change our div
+        timerDiveChildren.innerHTML = "Timer is Up!"
+        timerDiv.children[0].innerHTML = '';
+        timerDiv.style.backgroundColor='yellow'
+        timerDiv.children[1].style.color='black'
+        let finishButton = timerDiv.children[2];
+        finishButton.style.display = 'none';
+        let stopButton = timerDiv.children[3];
+      
+        stopButton.style.display = 'block';
+        stopButton.style.backgroundColor = '#34344A';
+        stopButton.style.color = 'white';
+        playNotificationSound();
+        let intervalId = setInterval(() => {
+          if(timerDiv.style.backgroundColor === 'yellow'){
+            timerDiv.style.backgroundColor = 'red'
+          }else{
+            timerDiv.style.backgroundColor = 'yellow'
+          }
+        },1000)
+        setTimeout(() => {
+           clearInterval(intervalId)
+        },4000)
+       
 
-    // convert hours, min, sec ---> seconds
-    seconds = hours * 60 * 60 + min * 60 + sec;
-    // console.log(seconds);
-    event.preventDefault();
-    console.log('set btn hit');
-    ifValidTimer(event, min, sec);
-});
+    }
+    else{
+        // if the timer is not 0 then we will set updated time
+        hrs = Math.floor(time / (60 * 60));
+        time = time % (60 * 60);
+        mins = Math.floor(time / (60));
+        time = time % 60;
+        seconds = time;
+        spans[0].innerText = hrs;
+        spans[2].innerText = mins;
+        spans[4].innerText = seconds;
+    }
 
-    function ifValidTimer(event, min, sec) {
-        console.log('if valid timer func run');
-        // startCountdown();
-
-        if (min >= 0 && min < 60 && sec >= 0 && sec < 60) {
-            // valid time
-            // console.log(event);
-            // Call this function to start the countdown
-            // startCountdown();
-            timers.push({name:timers.length + 1, duration: seconds});
-            console.log(timers);
-            initializeTimers(timers[timers.length - 1]);
-        }
-        else alert('Please enter valid time!!!! ex -> 00:00:05');
 }
 
-const timersList = document.getElementById('timers-list');
-function initializeTimers(timer) {
-    // timersList.innerHTML = '';
+function deleteActiveTimer(divId) {
+    const parentElement = document.getElementById('active-timers');
+    const divToRemove = document.getElementById(divId);
+    let intervalId = intervalIdMap.get(divId); // getting unique setInterval id related to this timer div
+    intervalIdMap.delete(divId);
+    if (divToRemove) {
+        // Remove the div element from its parent
+        parentElement.removeChild(divToRemove);
+        clearInterval(intervalId);
 
-        var alarmBox = document.createElement('div');
-        alarmBox.setAttribute('id', timer.name);
-        alarmBox.className = 'timer-div';
-
-        alarmBox.innerHTML = `
-        `;
-    
-        timersList.appendChild(alarmBox);
-        handleTimer(timer);
-
-        alarms++;
-}
-
-
-
-// 2nd functionality - stop timer
-
-
-function updateTimerDisplay(timer) {
-    if (document.getElementById(timer.name)) {
-        const timerElement = document.getElementById(timer.name);
-        timerElement.innerHTML = `
-        <div class="display-flex-row-center gap-2rem timer-box">
-        <p id="set-time">Time Left  :</p>
-        <div id="time-count-active" class="display-flex-row-center">
-            <p id="hour">${Math.floor(timer.duration / 3600).toString().padStart(2, '0')}</p>
-            <p>:</p>
-            <p id="min">${Math.floor((timer.duration % 3600) / 60).toString().padStart(2, '0')}</p>
-            <p>:</p>
-            <p id="sec">${Math.floor(timer.duration % 60).toString().padStart(2, '0')}</p>
-        </div>
-        <div id="set-btn" onClick="deleteAlarm(${timer.name})">Delete</div>
-    </div>
-        `;
+    } else {
+        console.log("The specified div doesn't exist.");
     }
     
-}
-
-function handleTimer(timer) {
-    updateTimerDisplay(timer);
-    timer.interval = setInterval(function() {
-        timer.duration--;
-        updateTimerDisplay(timer);
-        if (timer.duration <= 0) {
-            clearInterval(timer.interval);
-            // alert(timer.alarmMessage);
-            if (document.getElementById(timer.name)) {
-                const timerElement = document.getElementById(timer.name);
-                timerElement.className = 'timer-div-finished';
-                timerElement.innerHTML = `
-                <div class="display-flex-row-center gap-2rem timer-box-finished">
-                <p id="set-time-finished">Set Time :</p>
-                <div id="time-count-finished" class="display-flex-row-center">
-                    <p>Timer is Up!</p>
-                </div>
-                <div id="set-btn-finished" onClick="deleteAlarm(${timer.name})">Stop</div>
-            </div>
-                `;
-
-                playMusic();
-            }
-        }
-    }, 1000);
-}
-
-function deleteAlarm(elementId) {
-    // console.log(event.target);
-    timersList.removeChild(document.getElementById(`${elementId}`));
-    timers.splice(elementId - 1, 1);
-    alarms--;
-    console.log(alarms);
-    stopMusic();
-}
-
-
-
-function noAlarmOnScreen() {
+   if(intervalIdMap.size === 0){
+    document.getElementById('worning').style.display = 'block';
+   }
     
-    // display message
-    if (alarms === 0) {
-        no_alarm_msg.style.display = 'block';
-        console.log('tst');
-    }
-    else {
-        no_alarm_msg.style.display = 'none';
-    }
+    
+}
+function FinishTimer(intervalId,timerDivId){
+    clearInterval(intervalId);
 }
 
 
-function playMusic() {
-    console.log('music played');
-    audioElement.play();
+function setTimer(timerDivId,time){
+    const intervalId = setInterval(sayHello, 1000,timerDivId);
+    intervalIdMap.set(timerDivId,intervalId);
+    let timerDiv = document.getElementById('timerDivId');
+    setTimeout(FinishTimer,time,intervalId,timerDivId)
 }
 
-function stopMusic() {
-    console.log('music stopd');
-    audioElement.pause();
-    audioElement.currentTime = 0;
-}
 
-setInterval(noAlarmOnScreen, 100);
+function playNotificationSound() {
+    var audio = document.getElementById('notificationSound');
+    audio.play();
+}
